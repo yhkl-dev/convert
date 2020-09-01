@@ -3,7 +3,8 @@ from pprint import pprint
 from dbbase import Database
 from exception import ConnectDataBaseError
 from config import Config
-from sql import oracle_get_user_tables_sql_fmt
+from sql import oracle_get_user_tables_sql_fmt, oracle_check_table_struct_sql_fmt, \
+    oracle_query_table_data_sql_fmt
 
 
 class Oracle(Database):
@@ -14,23 +15,52 @@ class Oracle(Database):
     def __init__(self, **kwargs):
         super(Oracle, self).__init__(**kwargs)
         try:
-            # self._db = cx_Oracle.connect("test", "test", "192.168.31.128:1521/helowin")
-            self._db = cx_Oracle.connect(kwargs.get("USER"), kwargs.get("PASSWORD"),
-                                         "{}:{}/{}".format(kwargs.get("HOST"), kwargs.get("PORT"), kwargs.get("SID")))
+            conn_string = "{user}/{password}@{host}:{port}/{sid}".format(user=kwargs.get("USER"),
+                                                                         password=kwargs.get("PASSWORD"),
+                                                                         host=kwargs.get("HOST"),
+                                                                         port=kwargs.get("PORT"),
+                                                                         sid=kwargs.get("SID"))
+
+            self._db = cx_Oracle.connect(conn_string)
+
         except Exception as e:
             raise ConnectDataBaseError("Cannot connect to oracle", e)
+
         self.cursor = self._db.cursor()
         self.tables = self._fetch_tables(kwargs.get("USER"))
 
-    def _fetch_tables(self, user_name):
+    def _fetch_tables(self, user_name: str) -> list:
         print('user/schema name', user_name)
+
         sql = oracle_get_user_tables_sql_fmt.format(user_name.upper())
+
         self.cursor.execute(sql)
-        rest = self.cursor.fetchall()
-        pprint(rest)
+
+        res = self.cursor.fetchall()
+        return [table_tuple[0] for table_tuple in res]
+
+    def _fetch_table_meta_data(self, table_name: str) -> list:
+        print(table_name)
+        sql = oracle_check_table_struct_sql_fmt.format(table_name)
+        self.cursor.execute(sql)
+        res = self.cursor.fetchall()
+        return [(column[1], column[2]) for column in res]
+
+    def generate_data(self, table_name: str) -> list:
+        table_columns_and_type = self._fetch_table_meta_data(table_name)
+        table_columns = [table_column[0] for table_column in table_columns_and_type]
+        sql = oracle_query_table_data_sql_fmt.format(table_columns=','.join(table_columns),
+                                                     table_name=table_name)
+        self.cursor.execute(sql)
+        res = self.cursor.fetchall()
+        for row in res:
+            yield row
 
 
 if __name__ == '__main__':
     # o = Oracle(Config().source_conn)
     conf = Config()
     o = Oracle(**conf.SOURCE_CONN)
+    m = o.generate_data(o.tables[0])
+    for i in m:
+        print(i)
