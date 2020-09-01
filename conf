@@ -1,0 +1,25 @@
+[SOURCE]
+# the following db can be oracle postgres mysql ETC
+
+DBNAME: oracle
+HOST: 192.168.31.128
+PORT: 1521
+USER: test
+PASSWORD: test
+SCHEMA: TEST
+SID: ORCL
+
+[TARGET]
+# the target database to sync
+DBNAME: postgres
+HOST: 192.168.31.128
+PORT: 5434
+USER: postgres
+PASSWORD: 123456
+SCHEMA: shangdong
+
+
+[CONFIG]
+BUFFER: 8192
+THREADS：1
+
