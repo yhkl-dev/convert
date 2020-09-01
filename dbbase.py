@@ -10,14 +10,11 @@ class Database(object):
             raise UnSupportDatabaseTypeError
         self.conn_dict = kwargs
 
-    def _fetch_tables_name_in_schema(self, schema_name):
-        pass
-
     def _fetch_table_meta_data(self, table_name):
-        pass
+        return NotImplemented
 
     def generate_data(self, table_name):
-        pass
+        return NotImplemented
 
     def close(self):
         self.cursor.close()
