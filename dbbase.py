@@ -1,7 +1,7 @@
 class Database(object):
 
-    def __init__(self, conn):
-        self.conn = conn
+    def __init__(self, **kwargs):
+        self.conn = kwargs
 
     def _fetch_tables_name_in_schema(self, schema_name):
         pass
