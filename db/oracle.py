@@ -1,9 +1,9 @@
 import cx_Oracle
 from pprint import pprint
 from dbbase import Database
-from exception import ConnectDataBaseError
+from db.exception import ConnectDataBaseError
 from config import Config
-from sql import oracle_get_user_tables_sql_fmt, oracle_check_table_struct_sql_fmt, \
+from db.sql import oracle_get_user_tables_sql_fmt, oracle_check_table_struct_sql_fmt, \
     oracle_query_table_data_sql_fmt
 import sys
 import typing
@@ -64,17 +64,13 @@ class Oracle(Database):
         for table_name in self.tables:
             rows_generator = self.generate_data(table_name)
             for row in rows_generator:
-                print(row)
+                # print(row)
+                yield row
 
 
 if __name__ == '__main__':
     # o = Oracle(Config().source_conn)
     conf = Config()
     o = Oracle(**conf.SOURCE_CONN)
-    # m = o.generate_data(o.tables[0])
-    # for i in m:
-    #     print(i)
 
     o.generate_all_table_data()
-
-
