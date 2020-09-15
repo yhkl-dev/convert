@@ -1,6 +1,5 @@
 import cx_Oracle
-from pprint import pprint
-from dbbase import Database
+from db.dbbase import Database
 from db.exception import ConnectDataBaseError
 from config import Config
 from db.sql import oracle_get_user_tables_sql_fmt, oracle_check_table_struct_sql_fmt, \
@@ -64,7 +63,6 @@ class Oracle(Database):
         for table_name in self.tables:
             rows_generator = self.generate_data(table_name)
             for row in rows_generator:
-                # print(row)
                 yield row
 
 
